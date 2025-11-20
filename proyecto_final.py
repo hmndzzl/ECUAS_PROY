@@ -131,12 +131,29 @@ def f_sistema_lineal(t, u):
     dy = 2*y + np.exp(-t)
     return np.array([dx, dy])
 
-def y_sistema_lineal(t, C1, C2):
+def y_sistema_lineal(t):
     exp_neg_t = np.exp(-t)
     exp_2t = np.exp(2*t)
+    C1 = 4/3
+    C2 = 5/36
     u1 = (1/9)*exp_neg_t + C1*t*exp_2t - 0.5*t - 0.25 + C2*exp_2t
     u2 = - (1/3)*exp_neg_t + C1*exp_2t
     return np.array([u1, u2])
+
+def exacta_sistema_lineal(t):
+    t = np.array(t)   # aseguramos que funciona con listas
+    exp_neg_t = np.exp(-t)
+    exp_2t = np.exp(2*t)
+
+    C1 = 4/3
+    C2 = 5/36
+
+    u1 = (1/9)*exp_neg_t + C1*t*exp_2t - 0.5*t - 0.25 + C2*exp_2t
+    u2 = - (1/3)*exp_neg_t + C1*exp_2t
+
+    # MUY IMPORTANTE: regresar en forma (N, 2)
+    return np.column_stack((u1, u2))
+
 
 def sistema_lineal():
     print("\n--- SISTEMA LINEAL 2x2 ---")
@@ -151,11 +168,8 @@ def sistema_lineal():
     ts2, us2 = rk2_heun(f_sistema_lineal, t0, u0, h, steps)
     ts4, us4 = rk4(f_sistema_lineal, t0, u0, h, steps)
 
-    C1 = 4/3
-    C2 = 5/36
-
     # Solución analítica evaluada
-    u_exact = np.array([y_sistema_lineal(t, C1, C2) for t in ts4])
+    u_exact = np.array([y_sistema_lineal(t) for t in ts4])
 
     error_RK2 = np.max(np.abs(us2 - u_exact))
     error_RK4 = np.max(np.abs(us4 - u_exact))
@@ -278,6 +292,12 @@ def main():
     for i in range(len(hs)):
         print(f"h={hs[i]:.5f}   RK2={err2[i]:.8e}   RK4={err4[i]:.8e}")
 
+   # ---- SISTEMA LINEAL 2x2 ----
+    print("\n--- Convergencia: Sistema Lineal 2×2 ---")
+    hs, err2 = convergencia(f_sistema_lineal, exacta_sistema_lineal, 0, 3, [0.0, 1.0], rk2_heun)
+    hs, err4 = convergencia(f_sistema_lineal, exacta_sistema_lineal, 0, 3, [0.0, 1.0], rk4)
+    for i in range(len(hs)):
+        print(f"h={hs[i]:.5f}   RK2={err2[i]:.8e}   RK4={err4[i]:.8e}")
 
 
 if __name__ == "__main__":
